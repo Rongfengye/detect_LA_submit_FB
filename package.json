@@ -1,0 +1,58 @@
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "description": "Sample project in hopes of detecting a liquidity add (manually triggered by Metamask), then triggers a smart contract that submits bundles to the Flashbots relay",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "compile": "tsc --build --pretty",
+    "start": "node dist/index.js",
+    "eslint": "eslint --cache --fix 'src/**/*.ts'",
+    "prettier": "prettier --write 'src/**/*.ts'",
+    "lint": "npm run eslint && npm run prettier",
+    "check": "npm run lint && npm run compile",
+    "compile:dev": "tsc --watch --preserveWatchOutput",
+    "start:dev": "nodemon dist/index.js",
+    "dev": "concurrently npm:compile:dev npm:start:dev"
+  },
+  "pre-commit": [
+    "check"
+  ],
+  "author": "Rong Feng Ye",
+  "license": "ISC",
+  "dependencies": {
+    "@flashbots/ethers-provider-bundle": "^0.4.3",
+    "bignumber.js": "^9.0.1",
+    "dotenv-safe": "^8.2.0",
+    "ethers": "^5.6.5",
+    "fp-ts": "^2.11.0",
+    "lodash": "^4.17.21",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/dotenv-safe": "^8.1.2",
+    "@types/node": "^16.11.25",
+    "@typescript-eslint/eslint-plugin": "4.28.5",
+    "@typescript-eslint/parser": "4.28.5",
+    "concurrently": "^7.0.0",
+    "eslint": "7.31.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-prettier": "3.4.0",
+    "jest": "^27.5.1",
+    "nodemon": "^2.0.12",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.1.3",
+    "ts-node": "^10.1.0",
+    "typescript": ">=3.3.1 <4.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rongfengye/detect_LA_submit_FB.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rongfengye/detect_LA_submit_FB/issues"
+  },
+  "homepage": "https://github.com/Rongfengye/detect_LA_submit_FB#readme"
+}
