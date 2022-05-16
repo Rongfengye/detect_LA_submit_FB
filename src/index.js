@@ -45,6 +45,7 @@ dotenv.config();
 // Acquired from https://rpc.info/
 // const POLYGON_MATIC_RPC_URL = process.env.POLYGON_MATIC_RPC_URL || ""
 var POLYGON_MATIC_RPC_URL = "https://rpc.ankr.com/eth";
+// RIGHT NOT ITS NOT THE POLYGON ONE
 // Used to get information off of the chain
 // Standard json rpc provider directly from ethers.js (Flashbots)
 /* Inherits from JsonRPCProvider
@@ -53,41 +54,53 @@ var POLYGON_MATIC_RPC_URL = "https://rpc.ankr.com/eth";
       - As well as many third-party web services
     The JsonRpcProvider connects to a JSON-RPC HTTP API using the URL
 */
-var provider = new ethers_1.providers.StaticJsonRpcProvider(POLYGON_MATIC_RPC_URL);
+// const provider = new providers.StaticJsonRpcProvider(POLYGON_MATIC_RPC_URL);
 // This provider should ONLY be used when it is known the network cannot change
 // An ethers Provider will execute frequent 'getNetwork' calls and network being communicated with are consistent
 // In the case of a client like MetaMask, this is desired as the network may be 
 //    changed by the user at any time, in such cases the cost of checking 
 //    the chainID is local and therefore cheap
 // However, there are also many times where it is known the network cannot change
+// We are going to use a websocket provider
+var provider = new ethers_1.providers.WebSocketProvider("wss://speedy-nodes-nyc.moralis.io/5b4f2959281f08d79d7cf28b/eth/rinkeby/ws", "rinkeby");
+var Uniswap_V2_router_addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+// acquired from https://ethereum.stackexchange.com/questions/92381/uniswap-v2-router-factory-on-rinkeby-testnet#:~:text=The%20Uniswap%20V2%20router%20address,interface%20to%20use%20the%20Router.
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var SAMPLE_TX_HASH;
+        var num, SAMPLE_TX_HASH;
         var _this = this;
         return __generator(this, function (_a) {
-            console.log("Hitting the Ethereum RPC endpoint at" + POLYGON_MATIC_RPC_URL);
+            // console.log("Hitting the Websocket endpoint at" + POLYGON_MATIC_RPC_URL);
+            console.log("Hitting the Websocket endpoint at wss://speedy-nodes-nyc.moralis.io/5b4f2959281f08d79d7cf28b/eth/rinkeby/ws");
+            num = 0;
             provider.on('pending', function (pending_tx_hash) { return __awaiter(_this, void 0, void 0, function () {
                 var pending_tx, iface, decodedData;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            console.log("New Pending Transction with Hash", pending_tx_hash);
+                            // console.log("New Pending Transction with Hash", pending_tx_hash);
+                            console.log("New Pending Transaction", num);
+                            num++;
                             return [4 /*yield*/, provider.getTransaction(pending_tx_hash)];
                         case 1:
                             pending_tx = _a.sent();
-                            iface = new ethers_1.utils.Interface(abi_1.ABI);
-                            decodedData = iface.parseTransaction({ data: pending_tx.data, value: pending_tx.value });
-                            console.log("this is decoded DATA on the tx", decodedData);
-                            if (pending_tx) {
-                                console.log("This is the Pending Transaction Object", pending_tx);
+                            // console.log("The pending Transaction object is", pending_tx);
+                            if (pending_tx && pending_tx.to && (pending_tx.to === Uniswap_V2_router_addr)) {
+                                console.log("The pending Transaction object is", pending_tx);
+                                iface = new ethers_1.utils.Interface(abi_1.ABI);
+                                decodedData = iface.parseTransaction({ data: pending_tx.data, value: pending_tx.value });
+                                console.log("this is decoded DATA on the tx", decodedData);
                                 if (pending_tx.data.indexOf("0xf305d719") !== -1) {
                                     console.log("is an addLiquidityETH call");
                                     console.log("This is the address of token", decodedData.args[0]);
                                 }
-                                if (pending_tx.data.indexOf("0xe8e33700") !== -1) {
+                                else if (pending_tx.data.indexOf("0xe8e33700") !== -1) {
                                     console.log("is an addLiquidity call");
                                     console.log("This is the address of first token", decodedData.args[0]);
                                     console.log("This is the address of second token", decodedData.args[1]);
+                                }
+                                else {
+                                    console.log("Function " + decodedData.name + " being called");
                                 }
                             }
                             return [2 /*return*/];
