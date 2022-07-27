@@ -131,3 +131,122 @@ export const ABI = [{"inputs":[{"internalType":"address","name":"_factory","type
                     {"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapTokensForExactTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
                     {"stateMutability":"payable","type":"receive"}
 ]
+export const EMIT_DETAILS_ABI = [ {
+                                    "inputs": [],
+                                    "stateMutability": "nonpayable",
+                                    "type": "constructor"
+                                  },
+                                  {
+                                    "anonymous": false,
+                                    "inputs": [
+                                      {
+                                        "indexed": false,
+                                        "internalType": "string",
+                                        "name": "msg",
+                                        "type": "string"
+                                      }
+                                    ],
+                                    "name": "Log",
+                                    "type": "event"
+                                  },
+                                  {
+                                    "inputs": [
+                                      {
+                                        "internalType": "uint256",
+                                        "name": "_ethAmountToCoinbase",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "internalType": "uint256",
+                                        "name": "amountIn",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "internalType": "uint256",
+                                        "name": "amountOutMin",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "internalType": "address[]",
+                                        "name": "path",
+                                        "type": "address[]"
+                                      },
+                                      {
+                                        "internalType": "address",
+                                        "name": "_to",
+                                        "type": "address"
+                                      },
+                                      {
+                                        "internalType": "uint256",
+                                        "name": "deadline",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "internalType": "uint256[]",
+                                        "name": "amounts",
+                                        "type": "uint256[]"
+                                      }
+                                    ],
+                                    "name": "LogTxDetails",
+                                    "outputs": [],
+                                    "stateMutability": "payable",
+                                    "type": "function"
+                                  },
+                                  {
+                                    "anonymous": false,
+                                    "inputs": [
+                                      {
+                                        "indexed": false,
+                                        "internalType": "uint256",
+                                        "name": "_ethAmountToCoinbase",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "uint256",
+                                        "name": "amountIn",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "uint256",
+                                        "name": "amountOutMin",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "address[]",
+                                        "name": "path",
+                                        "type": "address[]"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "address",
+                                        "name": "_to",
+                                        "type": "address"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "uint256",
+                                        "name": "deadline",
+                                        "type": "uint256"
+                                      },
+                                      {
+                                        "indexed": false,
+                                        "internalType": "uint256[]",
+                                        "name": "amounts",
+                                        "type": "uint256[]"
+                                      }
+                                    ],
+                                    "name": "Snipe",
+                                    "type": "event"
+                                  },
+                                  {
+                                    "stateMutability": "payable",
+                                    "type": "fallback"
+                                  },
+                                  {
+                                    "stateMutability": "payable",
+                                    "type": "receive"
+                                  }
+                                ]

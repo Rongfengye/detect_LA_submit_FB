@@ -1,8 +1,9 @@
 // console.log("Hello world");
 import { Contract, providers, BigNumber, utils } from "ethers";
+import { EMIT_DETAILS_ADDRESS } from "./addresses";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
 import * as dotenv from "dotenv"
-import { ABI } from "./abi";
+import { ABI, EMIT_DETAILS_ABI } from "./abi";
 dotenv.config();
 
 // Ethereum RPC Endpoint that will be hit by providers
@@ -30,9 +31,11 @@ const POLYGON_MATIC_RPC_URL = "https://rpc.ankr.com/eth"
 
 // We are going to use a websocket provider
 const provider = new providers.WebSocketProvider("wss://speedy-nodes-nyc.moralis.io/5b4f2959281f08d79d7cf28b/eth/rinkeby/ws", "rinkeby");
+// More on Websockets https://ethereum.stackexchange.com/questions/82475/listening-to-events-in-ethers-js-with-websockets
 
 const Uniswap_V2_router_addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 // acquired from https://ethereum.stackexchange.com/questions/92381/uniswap-v2-router-factory-on-rinkeby-testnet#:~:text=The%20Uniswap%20V2%20router%20address,interface%20to%20use%20the%20Router.
+
 
 async function main() {
   // console.log("Hitting the Websocket endpoint at" + POLYGON_MATIC_RPC_URL);
@@ -44,8 +47,19 @@ async function main() {
   // More information on web sockets: https://www.geeksforgeeks.org/what-is-web-socket-and-how-it-is-different-from-the-http/
 
   let num = 0;
-  
-  provider.on('pending', async (pending_tx_hash) => {
+
+  // Creating a new Interface Instance
+  // To be able to decode or parse transaction data using Ethers.js we need to create a new interface instance
+  // Then, we must use the correct ABI and match the data with the signature hash
+  const iface = new utils.Interface(ABI);
+
+  // The smart contract that I will be interacting with
+  const emit_details_contract = new Contract(EMIT_DETAILS_ADDRESS, EMIT_DETAILS_ABI, provider);
+
+  // eventually want to pause provider because of Error: Unexpected server response: 429, so that ideally this script can run forever
+  // TO PREVENT ERROR 429
+  //https://github.com/ethers-io/ethers.js/issues/1053
+  let handle = provider.on('pending', async (pending_tx_hash) => {
     // console.log("New Pending Transction with Hash", pending_tx_hash);
     console.log("New Pending Transaction", num);
     num++;
@@ -53,87 +67,60 @@ async function main() {
     let pending_tx = await provider.getTransaction(pending_tx_hash);
 
     // console.log("The pending Transaction object is", pending_tx);
+    // Found a valid transaction that is interacting with Uniswap
     if (pending_tx && pending_tx.to && (pending_tx.to === Uniswap_V2_router_addr)) {
       console.log("The pending Transaction object is", pending_tx);
 
-      // Creating a new Interface Instance
-      // To be able to decode or parse transaction data using Ethers.js we need to create a new interface instance
-      // Then, we must use the correct ABI and match the data with the signature hash
-      const iface = new utils.Interface(ABI);
       let decodedData = iface.parseTransaction({ data: pending_tx.data, value: pending_tx.value });
 
       console.log("this is decoded DATA on the tx", decodedData);
 
-      if (pending_tx.data.indexOf("0xf305d719") !== -1) {
+      // if (pending_tx.data.indexOf("0xf305d719") !== -1) {
+      if (decodedData.name == "addLiquidityETH") {
         console.log("is an addLiquidityETH call");
         console.log("This is the address of token", decodedData.args[0]);
 
-      } else if (pending_tx.data.indexOf("0xe8e33700") !== -1) {
+
+
+        // stright up call the function
+        // then populate transaction
+        
+        // package it all into a bundle
+        // simple bundle first, then look at simple arb to see how to put them right after each other
+
+        // then need to write something that actually does the snipe
+        // then bundle is correclty
+        
+        // call my arbitrage function here
+        // first make the sol contract emit the values, which eventually is in the transaction logs and can be seen in the transaction receipt
+        // https://codeburst.io/deep-dive-into-ethereum-logs-a8d2047c7371  looks into parsing log data
+        //https://consensys.net/blog/developers/guide-to-events-and-logs-in-ethereum-smart-contracts/
+        // https://cryptomarketpool.com/how-to-use-flashbots/
+
+      // } else if (pending_tx.data.indexOf("0xe8e33700") !== -1) {
+      } else if (decodedData.name == "addLiquidity") {
         console.log("is an addLiquidity call");
         console.log("This is the address of first token", decodedData.args[0]);
         console.log("This is the address of second token", decodedData.args[1]);
+
+        // call my arbitrage function here
       } else {
         console.log("Function " + decodedData.name + " being called");
       }
     }
-  })
 
-  // index of method in transaction .data
+    // Now that we have found our pending transactions interacting with the Uniswap DApp
+    // we need to feed our addresses into our snipeToken function
+    // Use ethers.js to create a new Contract object of a solidity contract that calls swaptoken
 
-  // all liquidity pool ABIs are the same
-  
-
-  // Use metamask to initialize an addLiquidity to polygon network
-  // A ethers Contract object requires:
-  //    - Contract address (transaction object [to])
-  //    - ABI (all liquidity pool ABIs are the same)
-  //    - provider (which we have)
-
-  // console.log that we have detected it
-  // https://www.reddit.com/r/ethdev/comments/numhsu/getting_filtered_pending_transactions_with/
-  //https://ethereum.stackexchange.com/questions/111643/how-do-you-resolve-and-end-pending-transaction-checks-in-ethers-js
-
-  // liqduity pool was initialized at tx https://etherscan.io/tx/0x4a5410e7a9d56c10a1f063e1ba5a8902980072ecb959c154b38dd2a02493718a
-
-  const SAMPLE_TX_HASH = "0x6c45dedcfc4e9ff44b4358adea4456a9f0ca407e2c2a2e29aa531a80108a5f26"; 
-  // Transaction hash calling 
-  // addLiquidityETH(address token, uint256 amountTokenDesired, uint256 amountTokenMin,
-  //                 uint256 amountETHMin, address to, uint256 deadline)
-  // 
-
-  // https://etherscan.io/tx/0x6c45dedcfc4e9ff44b4358adea4456a9f0ca407e2c2a2e29aa531a80108a5f26
-  // liquidity pool exists at https://etherscan.io/token/0x13c69aa8bf77f49508750d792976dacd91c41714?a=0x38bf5c9d2e32c1bfcd5f15081799b3f8f3658556#readContract 
+    // Use ethers.js to organize the flashbots provider object and submit the bundle (HELPER FUNCTION)
 
 
-  // const SAMPLE_TX_HASH = "0x55fafb6f2f7facbda7576c76570f51fc51d0adcd689d3bd41b3002a22b37b52d"; // USDC WETH add liqudity
-  
-  
-  // provider.getTransaction(SAMPLE_TX_HASH).then((tx_Object) => {
-  //   console.log("this is GET TRANSACTION", tx_Object);
-  //   // console.log("this is data", tx_Object.data);
-
-  //   // Creating a new Interface Instance
-  //   // To be able to decode or parse transaction data using Ethers.js we need to create a new interface instance
-  //   // Then, we must use the correct ABI and match the data with the signature hash
-  //   const iface = new utils.Interface(ABI);
-  //   let decodedData = iface.parseTransaction({ data: tx_Object.data, value: tx_Object.value });
-
-  //   console.log("this is decoded DATA on the addLiquidityETH tx", decodedData);
-
-  //   console.log("should be address to", decodedData.args[4]);
-
-  //   if (tx_Object.data.indexOf("0xf305d719") !== -1) {
-  //     console.log("This is the data field", tx_Object.data);
-  //     console.log("the index is", tx_Object.data.indexOf("0xf305d719"));
-  //   }
-  // });
+  });
 
   
 
-  // This needs to be mined tho
-  // provider.getTransactionReceipt(SAMPLE_TX_HASH).then((tx_Object) => {console.log("this is GET TRANSACTION RECEIPT", tx_Object)});
-
-
+  console.log("THIS IS HANDLE", handle);
 }
 
 

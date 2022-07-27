@@ -63,17 +63,18 @@ var POLYGON_MATIC_RPC_URL = "https://rpc.ankr.com/eth";
 // However, there are also many times where it is known the network cannot change
 // We are going to use a websocket provider
 var provider = new ethers_1.providers.WebSocketProvider("wss://speedy-nodes-nyc.moralis.io/5b4f2959281f08d79d7cf28b/eth/rinkeby/ws", "rinkeby");
+// More on Websockets https://ethereum.stackexchange.com/questions/82475/listening-to-events-in-ethers-js-with-websockets
 var Uniswap_V2_router_addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 // acquired from https://ethereum.stackexchange.com/questions/92381/uniswap-v2-router-factory-on-rinkeby-testnet#:~:text=The%20Uniswap%20V2%20router%20address,interface%20to%20use%20the%20Router.
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var num, SAMPLE_TX_HASH;
+        var num, handle;
         var _this = this;
         return __generator(this, function (_a) {
             // console.log("Hitting the Websocket endpoint at" + POLYGON_MATIC_RPC_URL);
             console.log("Hitting the Websocket endpoint at wss://speedy-nodes-nyc.moralis.io/5b4f2959281f08d79d7cf28b/eth/rinkeby/ws");
             num = 0;
-            provider.on('pending', function (pending_tx_hash) { return __awaiter(_this, void 0, void 0, function () {
+            handle = provider.on('pending', function (pending_tx_hash) { return __awaiter(_this, void 0, void 0, function () {
                 var pending_tx, iface, decodedData;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
@@ -94,7 +95,7 @@ function main() {
                                     console.log("is an addLiquidityETH call");
                                     console.log("This is the address of token", decodedData.args[0]);
                                 }
-                                else if (pending_tx.data.indexOf("0xe8e33700") !== -1) {
+                                else if (pending_tx.data.indexOf("0xe8e33700") !== -1) { // CHange checking decodedData.name
                                     console.log("is an addLiquidity call");
                                     console.log("This is the address of first token", decodedData.args[0]);
                                     console.log("This is the address of second token", decodedData.args[1]);
@@ -107,7 +108,9 @@ function main() {
                     }
                 });
             }); });
-            SAMPLE_TX_HASH = "0x6c45dedcfc4e9ff44b4358adea4456a9f0ca407e2c2a2e29aa531a80108a5f26";
+            // TO PREVENT ERROR 429
+            //https://github.com/ethers-io/ethers.js/issues/1053
+            console.log("THIS IS HANDLE", handle);
             return [2 /*return*/];
         });
     });
